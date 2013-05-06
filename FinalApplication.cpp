@@ -1,12 +1,11 @@
 #include "FinalApplication.h"
+#include <string>
+
 Ogre::Vector3 grav = Ogre::Vector3(0, -1000, 0);
 int jumpFlag = 0;
 int jumpAnimationFlag = 0;
 Ogre::Vector3 nodePos = Ogre::Vector3(0, 0, 0);
 Ogre::Vector3 nodeVelocity = Ogre::Vector3(0, 0, 0);
-
-
-
 
 FinalApplication::FinalApplication(void)
 {
@@ -15,6 +14,10 @@ FinalApplication::FinalApplication(void)
 
 FinalApplication::~FinalApplication(void)
 {
+}
+
+//-------------------------------------Cube----------------------------------------
+void createCubeEntity(Ogre::Vector3 position, float size){
 }
 
 
@@ -31,7 +34,6 @@ void FinalApplication::createCamera(void)
 	mCameraMan = new OgreBites::SdkCameraMan(mCamera);
 	mCameraMan->SdkCameraMan::setStyle(OgreBites::CS_MANUAL); //CS_MANUAL
     //mCamera->setPosition(Ogre::Vector3(0,250,1000));
-	
 }
 
 //-------------------------------------------------------------------------------------
@@ -56,7 +58,6 @@ void FinalApplication::createScene(void)
 	mSceneMgr->setAmbientLight(Ogre::ColourValue(1.0f, 1.0f, 1.0f));
 
 	mEntity = mSceneMgr->createEntity("Ninja", "ninja.mesh");
-
 	mNode = mSceneMgr->getRootSceneNode()->
 		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 0.0f));
 	mNode->attachObject(mEntity);
@@ -73,8 +74,6 @@ void FinalApplication::createFrameListener(void){
 	// Set default values for variables
 	mWalkSpeed = 35.0f;
 	mDirection = Ogre::Vector3::ZERO;
-
-
 }
 
 //-------------------------------------------------------------------------------------
@@ -106,8 +105,16 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 			transVector.x += mMove;
 		}
 	}
-
 	if(mKeyboard->isKeyDown(OIS::KC_J)) {
+		if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)){
+			mSceneMgr->getSceneNode("NinjaNode")->yaw(Ogre::Degree(-mRotate*5));
+		} else{
+			transVector.x -= mMove;
+		}
+	}
+	// I made J to move left and F to jump - freya
+
+	if(mKeyboard->isKeyDown(OIS::KC_F)) {
 		if(jumpFlag == 0){
 			jumpFlag = 1;
 			jumpAnimationFlag = 1;

@@ -25,7 +25,6 @@
 //#include "BasicTutorial4.h"
 #include "BasicTutorial6.h"
 #include "BasicTutorial8.h"
-#include "IntermediateTutorial1.h"
 #include "FinalApplication.h"
 
 #if OGRE_PLATFORM == OGRE_PLATFORM_WIN32
