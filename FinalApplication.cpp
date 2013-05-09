@@ -3,9 +3,15 @@
 
 Ogre::Vector3 grav = Ogre::Vector3(0, -1000, 0);
 int jumpFlag = 0;
+int forwardFlag = 0;
+int backFlag = 0;
+int strafeFlag = 0;
 int jumpAnimationFlag = 0;
+int newAnimationFlag = 0;
+int idleFlag = 1;
 Ogre::Vector3 nodePos = Ogre::Vector3(0, 0, 0);
 Ogre::Vector3 nodeVelocity = Ogre::Vector3(0, 0, 0);
+int previousY;
 
 FinalApplication::FinalApplication(void)
 {
@@ -59,7 +65,7 @@ void FinalApplication::createScene(void)
 
 	mEntity = mSceneMgr->createEntity("Ninja", "ninja.mesh");
 	mNode = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 0.0f));
+		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 120.0f));
 	mNode->attachObject(mEntity);
 }
 
@@ -91,30 +97,50 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 	
 
 	Ogre::Vector3 transVector = Ogre::Vector3::ZERO;
-	if(mKeyboard->isKeyDown(OIS::KC_I)) {
+	if(mKeyboard->isKeyDown(OIS::KC_W)) {
 		transVector.z -= mMove;
-	}
-	if(mKeyboard->isKeyDown(OIS::KC_K)) {
-		transVector.z += mMove;
-	}
-
-	if(mKeyboard->isKeyDown(OIS::KC_L)) {
-		if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)){
-			mSceneMgr->getSceneNode("NinjaNode")->yaw(Ogre::Degree(-mRotate*5));
-		} else{
-			transVector.x += mMove;
+		if(jumpFlag == 0){
+			forwardFlag = 1;
+			//newAnimationFlag = 1;
+			idleFlag = 0;
+			strafeFlag = 0;
+			backFlag = 0;
 		}
 	}
-	if(mKeyboard->isKeyDown(OIS::KC_J)) {
-		if(mKeyboard->isKeyDown(OIS::KC_LSHIFT)){
-			mSceneMgr->getSceneNode("NinjaNode")->yaw(Ogre::Degree(-mRotate*5));
-		} else{
-			transVector.x -= mMove;
+	if(mKeyboard->isKeyDown(OIS::KC_S)) {
+		transVector.z += mMove;
+		if(jumpFlag == 0){
+			forwardFlag = 0;
+			idleFlag = 0;
+			strafeFlag = 0;
+			backFlag = 1;
+			//newAnimationFlag = 2;
+		}
+	}
+
+	if(mKeyboard->isKeyDown(OIS::KC_D)) {
+		transVector.x += mMove;
+		if(jumpFlag == 0){
+			forwardFlag = 0;
+			idleFlag = 0;
+			strafeFlag = 1;
+			//newAnimationFlag = 3;
+			backFlag = 0;
+		}
+	}
+	if(mKeyboard->isKeyDown(OIS::KC_A)) {
+		transVector.x -= mMove;
+		if(jumpFlag == 0){
+			forwardFlag = 0;
+			idleFlag = 0;
+			strafeFlag = 1;
+			//newAnimationFlag = 3;
+			backFlag = 0;
 		}
 	}
 	// I made J to move left and F to jump - freya
 
-	if(mKeyboard->isKeyDown(OIS::KC_F)) {
+	if(mKeyboard->isKeyDown(OIS::KC_J)) {
 		if(jumpFlag == 0){
 			jumpFlag = 1;
 			jumpAnimationFlag = 1;
@@ -132,9 +158,11 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 		nodePos.y += nodeVelocity.y*evt.timeSinceLastFrame;
 		transVector.y = nodeVelocity.y;
 		if(nodePos.y <= 0){
+			transVector.y = -previousY;
 			jumpFlag = 0;
 			nodePos.y = 0;
 		}
+		previousY = nodePos.y;
 	}
 
 	mSceneMgr->getSceneNode("NinjaNode")->translate(transVector * evt.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
@@ -147,10 +175,46 @@ bool FinalApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 {
 	if(jumpFlag == 1){
 	}
-	if(jumpFlag == 0) {
+	else if(forwardFlag == 1){
+		forwardFlag = 0;
+		if(newAnimationFlag != 1){
+			newAnimationFlag = 1;
+			mAnimationState->setTimePosition(0);
+		}
+		mAnimationState = mEntity->getAnimationState("Walk");
+        mAnimationState->setLoop(true);
+        mAnimationState->setEnabled(true);
+	}
+	else if(backFlag == 1){
+		backFlag = 0;
+		if(newAnimationFlag != 2){
+			newAnimationFlag = 2;
+			mAnimationState->setTimePosition(0);
+		}
+		mAnimationState = mEntity->getAnimationState("Walk");
+        mAnimationState->setLoop(true);
+        mAnimationState->setEnabled(true);
+	}
+	else if(strafeFlag == 1){
+		strafeFlag = 0;
+		if(newAnimationFlag != 3){
+			newAnimationFlag = 3;
+			mAnimationState->setTimePosition(0);
+		}
+		mAnimationState = mEntity->getAnimationState("Stealth");
+        mAnimationState->setLoop(true);
+        mAnimationState->setEnabled(true);
+	}
+	else {
+		//newAnimationFlag = 0;
+		if(newAnimationFlag != 0){
+			newAnimationFlag = 0;
+			mAnimationState->setTimePosition(0);
+		}
 		mAnimationState = mEntity->getAnimationState("Idle1");
         mAnimationState->setLoop(true);
         mAnimationState->setEnabled(true);
+		//newAnimationFlag = 0;
 	}
 
 	
