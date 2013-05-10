@@ -1,0 +1,41 @@
+material HW4/Test
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.1 0.1 0.1
+
+			texture_unit
+			{
+				texture BeachStones.jpg
+			}
+		}
+	}
+}
+
+material FINAL/Green
+{
+	technique
+	{
+		pass
+		{
+			ambient 0.0 0.75 0.0
+			diffuse 0.4 0.5 0.4
+			specular 0.04 0.7 0.04 0.078
+		}
+	}
+}
+
+material FINAL/Red
+{
+    technique
+    {
+        pass
+        {
+			ambient 0.8745 0.01175 0.01175
+			diffuse 0.61424 0.04136 0.04136
+			specular 0.727811 0.626959 0.626959 0.6
+        }
+    }
+}

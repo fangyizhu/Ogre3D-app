@@ -1,5 +1,6 @@
 #include "FinalApplication.h"
 #include <string>
+using namespace std;
 
 Ogre::Vector3 grav = Ogre::Vector3(0, -1000, 0);
 int jumpFlag = 0;
@@ -22,11 +23,6 @@ FinalApplication::~FinalApplication(void)
 {
 }
 
-//-------------------------------------Cube----------------------------------------
-void createCubeEntity(Ogre::Vector3 position, float size){
-}
-
-
 //-------------------------------------------------------------------------------------
 void FinalApplication::createCamera(void)
 {
@@ -40,6 +36,29 @@ void FinalApplication::createCamera(void)
 	mCameraMan = new OgreBites::SdkCameraMan(mCamera);
 	mCameraMan->SdkCameraMan::setStyle(OgreBites::CS_MANUAL); //CS_MANUAL
     //mCamera->setPosition(Ogre::Vector3(0,250,1000));
+}
+
+//-------------------------------------Cube----------------------------------------
+void FinalApplication::createCubeEntity(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color){
+	Ogre::Entity *newEntity;  
+	char entityName[80];
+	sprintf(entityName, "Cube_%d_Entity",  index);
+	newEntity = mSceneMgr->createEntity(entityName,  "cube.mesh");
+	if(color > 0) {
+		newEntity->setMaterialName("FINAL/Green");
+	}
+	else {
+		newEntity->setMaterialName("FINAL/Red");
+	}
+	Ogre::SceneNode *newNode;  
+	char nodeName[80];
+	sprintf(nodeName, "Cube_%d_Node",  index);
+	newNode = mSceneMgr->getRootSceneNode()->
+		createChildSceneNode(nodeName, position);
+	newNode->attachObject(newEntity);
+	newNode->scale( scale ); 
+	_cubeEntities.push_back(newEntity);
+	_cubeNodes.push_back(newNode);
 }
 
 //-------------------------------------------------------------------------------------
@@ -65,17 +84,20 @@ void FinalApplication::createScene(void)
 
 	mEntity = mSceneMgr->createEntity("Ninja", "ninja.mesh");
 	mNode = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 120.0f));
+		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 0.0f));
 	mNode->attachObject(mEntity);
+
+	createCubeEntity(Ogre::Vector3(50.0f, 50.0f, 50.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 0, 0);
+	createCubeEntity(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 1, 1);
 }
 
 void FinalApplication::createFrameListener(void){
 	BaseApplication::createFrameListener();
 
 	// Set idle animation
-    mAnimationState = mEntity->getAnimationState("Idle1");
-    mAnimationState->setLoop(true);
-    mAnimationState->setEnabled(true);
+	mAnimationState = mEntity->getAnimationState("Idle1");
+	mAnimationState->setLoop(true);
+	mAnimationState->setEnabled(true);
 
 	// Set default values for variables
 	mWalkSpeed = 35.0f;
@@ -144,7 +166,7 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 		if(jumpFlag == 0){
 			jumpFlag = 1;
 			jumpAnimationFlag = 1;
-			nodeVelocity.y = 500;
+			nodeVelocity.y = 750;
 			mAnimationState = mEntity->getAnimationState("JumpNoHeight");
 			mAnimationState->setTimePosition(0);
 			mAnimationState->setLoop(false);

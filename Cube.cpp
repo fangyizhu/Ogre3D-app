@@ -16,5 +16,6 @@ Cube::~Cube(void)
 
 bool Cube::inCube(Ogre::Vector3 position)
 {
+
 	return false;
 }

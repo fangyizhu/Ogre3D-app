@@ -5,6 +5,7 @@
 #include <deque>
 #include <vector>
 #include <string>
+using namespace std;
 
 class FinalApplication : public BaseApplication
 {
@@ -34,11 +35,10 @@ protected:
 	//---------------- cube ---------------
 	std::vector<Cube*> _cubes;
 	std::vector<Ogre::Entity*> _cubeEntities;
-	std::vector<std::string> _cubeEntityNames;
 	std::vector<Ogre::SceneNode*> _cubeNodes;
-	std::vector<std::string> _cubeNodeNames;
+		void createCubeEntity(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color); //0 for red, 1 for green 
 
 private:
     bool processUnbufferedInput(const Ogre::FrameEvent& evt);
-	void createCubeEntity(Ogre::Vector3 position, float size);
+
 };
