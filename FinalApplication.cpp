@@ -39,7 +39,7 @@ void FinalApplication::createCamera(void)
 }
 
 //-------------------------------------Cube----------------------------------------
-void FinalApplication::createCubeEntity(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color){
+void FinalApplication::createCube(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color){
 	Ogre::Entity *newEntity;  
 	char entityName[80];
 	sprintf(entityName, "Cube_%d_Entity",  index);
@@ -61,6 +61,27 @@ void FinalApplication::createCubeEntity(Ogre::Vector3 position, Ogre::Vector3 sc
 	_cubeNodes.push_back(newNode);
 }
 
+int FinalApplication::collideCube() {
+	Ogre::Vector3 playerCenter = mNode->getPosition();
+	int num = _cubeNodes.size();
+	for(int i = 0; i < num; i++) {
+		Ogre::Vector3 cubeCenter = _cubeNodes[i]->getPosition();
+		Ogre::Vector3 cubeScale = _cubeNodes[i]->getScale();
+		int minX = cubeCenter.x - 50 * cubeScale.x -12;
+		int maxX = cubeCenter.x + 50 * cubeScale.x + 12;
+		int minY = cubeCenter.y - 50 * cubeScale.y;
+		int maxY = cubeCenter.y + 50 * cubeScale.y;
+		int minZ = cubeCenter.z - 50 * cubeScale.z - 25;
+		int maxZ = cubeCenter.z + 50 * cubeScale.z + 25;
+
+		if( playerCenter.x < maxX && playerCenter.x > maxX &&
+			playerCenter.y < maxY && playerCenter.y > maxY &&
+			playerCenter.z < maxZ && playerCenter.z > maxZ ) {
+				return i;
+		}
+	}
+	return -1;
+}
 //-------------------------------------------------------------------------------------
 void FinalApplication::createScene(void)
 {
@@ -87,8 +108,8 @@ void FinalApplication::createScene(void)
 		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 0.0f));
 	mNode->attachObject(mEntity);
 
-	createCubeEntity(Ogre::Vector3(50.0f, 50.0f, 50.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 0, 0);
-	createCubeEntity(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 1, 1);
+	createCube(Ogre::Vector3(50.0f, 50.0f, 50.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 0, 0);
+	createCube(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 1, 1);
 }
 
 void FinalApplication::createFrameListener(void){

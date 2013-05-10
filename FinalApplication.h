@@ -33,12 +33,11 @@ protected:
 
 
 	//---------------- cube ---------------
-	std::vector<Cube*> _cubes;
 	std::vector<Ogre::Entity*> _cubeEntities;
 	std::vector<Ogre::SceneNode*> _cubeNodes;
-		void createCubeEntity(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color); //0 for red, 1 for green 
+	void createCube(Ogre::Vector3 position, Ogre::Vector3 scale, int index, int color); //0 for red, 1 for green 
+	int collideCube(); // not colliding any cube returns -1, otherwise returns the index of the cube
 
 private:
     bool processUnbufferedInput(const Ogre::FrameEvent& evt);
-
 };
