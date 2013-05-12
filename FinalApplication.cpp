@@ -9,9 +9,13 @@ int backFlag = 0;
 int strafeFlag = 0;
 int jumpAnimationFlag = 0;
 int newAnimationFlag = 0;
+int deathFlag = 0;
+int winFlag = 0;
 int idleFlag = 1;
 int pushFlag = 0;
+int newDeath = 0;
 Ogre::Vector3 nodePos = Ogre::Vector3(0, 0, 0);
+Ogre::Vector3 ninjaPos = Ogre::Vector3(0, 0, 0);
 Ogre::Vector3 nodeVelocity = Ogre::Vector3(0, 0, 0);
 int previousY;
 
@@ -30,10 +34,10 @@ void FinalApplication::createCamera(void)
 	// create the camera
 	mCamera = mSceneMgr->createCamera("PlayerCam");
 	// set its position, direction  
-    mCamera->setPosition(Ogre::Vector3(0,200,500));
-    mCamera->lookAt(Ogre::Vector3(0,0,0));
+    mCamera->setPosition(Ogre::Vector3(0,200,1500));
+    mCamera->lookAt(Ogre::Vector3(0,0,1000));
 	// set the near clip distance
-    mCamera->setNearClipDistance(5);
+    mCamera->setNearClipDistance(100);
 	mCameraMan = new OgreBites::SdkCameraMan(mCamera);
 	mCameraMan->SdkCameraMan::setStyle(OgreBites::CS_MANUAL); //CS_MANUAL
     //mCamera->setPosition(Ogre::Vector3(0,250,1000));
@@ -95,7 +99,7 @@ void FinalApplication::createScene(void)
 {
 	//create plane
 	float xTiles  = 8; //num of verticle tiles
-	float yTiles = 40; //num of horizontal tiles
+	float yTiles = 43; //num of horizontal tiles
 	float tileSize = 100.0f * 4; //size of each tile
 	float width  = xTiles * tileSize / 4; //4 per checkerboard pattern
 	float height = yTiles * tileSize / 4; //4 per checkerboard pattern
@@ -113,12 +117,28 @@ void FinalApplication::createScene(void)
 
 	mEntity = mSceneMgr->createEntity("Ninja", "ninja.mesh");
 	mNode = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 3.0f, 0.0f));
+		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 3.0f, 1000.0f));
 	mNode->attachObject(mEntity);
+	
+	mSceneMgr->setSkyDome(true, "Examples/CloudySky", 5, 8, 500);
 
 	//create the cubes here:
-	createCube(Ogre::Vector3(50.0f, 50.0f, -450.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 0, 0);
-	createCube(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 1, 1);
+	//createCube(Ogre::Vector3(50.0f, 50.0f, -450.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 0, 0);
+	//createCube(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 1, 1);
+	
+	createCube(Ogre::Vector3(0.0f, 50.0f, 850.0f), Ogre::Vector3(8.0f, 1.0f, 1.0f), 0, 0);
+
+	createCube(Ogre::Vector3(0.0f, 150.0f, 250.0f), Ogre::Vector3(2.0f, 3.0f, 1.0f), 1, 1);
+	createCube(Ogre::Vector3(250.0f, 150.0f, 250.0f), Ogre::Vector3(3.0f, 3.0f, 1.0f), 2, 0);
+	createCube(Ogre::Vector3(-250.0f, 150.0f, 250.0f), Ogre::Vector3(3.0f, 3.0f, 1.0f), 3, 0);
+
+	createCube(Ogre::Vector3(0.0f, 50.0f, -550.0f), Ogre::Vector3(8.0f, 1.0f, 1.0f), 4, 0);
+
+	createCube(Ogre::Vector3(300.0f, 150.0f, -1150.0f), Ogre::Vector3(2.0f, 3.0f, 1.0f), 5, 1);
+	createCube(Ogre::Vector3(-100.0f, 150.0f, -1150.0f), Ogre::Vector3(6.0f, 3.0f, 1.0f), 6, 0);
+	
+	createCube(Ogre::Vector3(0.0f, 50.0f, -1850.0f), Ogre::Vector3(8.0f, 1.0f, 1.0f), 7, 0);
+
 }
 
 void FinalApplication::createFrameListener(void){
@@ -241,8 +261,24 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 	}
 	else if (cubeidx != -1) {
 		//cube is red. Do something else
-		//deathFlag = 1; //(?)
+		deathFlag = 1;
+		newDeath = 1;
+		jumpFlag = 0;
 	}
+
+	ninjaPos = mSceneMgr->getSceneNode("NinjaNode")->getPosition();
+
+	if(ninjaPos.x > 400 || ninjaPos.x < -400){
+		deathFlag = 1;
+		newDeath = 1;
+		jumpFlag = 0;
+	}
+	if(ninjaPos.z < -2200){
+		winFlag = 1;
+		newDeath = 1;
+		jumpFlag = 0;
+	}
+
 	//strafeFlag = 1;
 
 	return true;
@@ -292,6 +328,24 @@ bool FinalApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
         mAnimationState->setLoop(true);
         mAnimationState->setEnabled(true);
 	}
+	else if(deathFlag == 1){
+		if(newDeath == 1){
+			mAnimationState->setTimePosition(0);
+		}
+		newDeath = 0;
+		mAnimationState = mEntity->getAnimationState("Death1");
+        mAnimationState->setLoop(false);
+        mAnimationState->setEnabled(true);
+	}
+	else if(winFlag == 1){
+		if(newDeath == 1){
+			mAnimationState->setTimePosition(0);
+		}
+		newDeath = 0;
+		mAnimationState = mEntity->getAnimationState("Climb");
+        mAnimationState->setLoop(true);
+        mAnimationState->setEnabled(true);
+	}
 	else {
 		//newAnimationFlag = 0;
 		if(newAnimationFlag != 0){
@@ -304,8 +358,9 @@ bool FinalApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 		//newAnimationFlag = 0;
 	}
 
-	
-	if(!processUnbufferedInput(evt)) return false;
+	if(deathFlag == 0 && winFlag == 0){
+		if(!processUnbufferedInput(evt)) return false;
+	}
 	
 	mAnimationState->addTime(evt.timeSinceLastFrame);
 
