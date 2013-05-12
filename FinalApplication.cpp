@@ -10,6 +10,7 @@ int strafeFlag = 0;
 int jumpAnimationFlag = 0;
 int newAnimationFlag = 0;
 int idleFlag = 1;
+int pushFlag = 0;
 Ogre::Vector3 nodePos = Ogre::Vector3(0, 0, 0);
 Ogre::Vector3 nodeVelocity = Ogre::Vector3(0, 0, 0);
 int previousY;
@@ -68,21 +69,22 @@ bool FinalApplication::cubeIsGreen(int index) {
 }
 
 int FinalApplication::collideCube() {
-	Ogre::Vector3 playerCenter = mNode->getPosition();
+	//Ogre::Vector3 playerCenter = mNode->getPosition();
+	Ogre::Vector3 playerCenter = mSceneMgr->getSceneNode("NinjaNode")->getPosition();
 	int num = _cubeNodes.size();
 	for(int i = 0; i < num; i++) {
 		Ogre::Vector3 cubeCenter = _cubeNodes[i]->getPosition();
 		Ogre::Vector3 cubeScale = _cubeNodes[i]->getScale();
-		int minX = cubeCenter.x - 50 * cubeScale.x -12;
-		int maxX = cubeCenter.x + 50 * cubeScale.x + 12;
+		int minX = cubeCenter.x - 50 * cubeScale.x -23;
+		int maxX = cubeCenter.x + 50 * cubeScale.x + 23;
 		int minY = cubeCenter.y - 50 * cubeScale.y;
 		int maxY = cubeCenter.y + 50 * cubeScale.y;
-		int minZ = cubeCenter.z - 50 * cubeScale.z - 25;
-		int maxZ = cubeCenter.z + 50 * cubeScale.z + 25;
+		int minZ = cubeCenter.z - 50 * cubeScale.z - 37;
+		int maxZ = cubeCenter.z + 50 * cubeScale.z + 37;
 
-		if( playerCenter.x < maxX && playerCenter.x > maxX &&
-			playerCenter.y < maxY && playerCenter.y > maxY &&
-			playerCenter.z < maxZ && playerCenter.z > maxZ ) {
+		if( playerCenter.x < maxX && playerCenter.x > minX &&
+			playerCenter.y < maxY && playerCenter.y > minY &&
+			playerCenter.z < maxZ && playerCenter.z > minZ ) {
 				return i;
 		}
 	}
@@ -111,11 +113,12 @@ void FinalApplication::createScene(void)
 
 	mEntity = mSceneMgr->createEntity("Ninja", "ninja.mesh");
 	mNode = mSceneMgr->getRootSceneNode()->
-		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 0.0f, 0.0f));
+		createChildSceneNode("NinjaNode", Ogre::Vector3(0.0f, 3.0f, 0.0f));
 	mNode->attachObject(mEntity);
 
-	createCube(Ogre::Vector3(50.0f, 50.0f, 50.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 0, 0);
-	createCube(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 1.0f, 1.0f), 1, 1);
+	//create the cubes here:
+	createCube(Ogre::Vector3(50.0f, 50.0f, -450.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 0, 0);
+	createCube(Ogre::Vector3(50.0f, 50.0f, -250.0f), Ogre::Vector3(3.0f, 8.0f, 1.0f), 1, 1);
 }
 
 void FinalApplication::createFrameListener(void){
@@ -216,6 +219,31 @@ bool FinalApplication::processUnbufferedInput(const Ogre::FrameEvent& evt)
 
 	mSceneMgr->getSceneNode("NinjaNode")->translate(transVector * evt.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
 	mCamera->move(transVector * evt.timeSinceLastFrame);
+	int cubeidx = -1;
+	cubeidx = collideCube();
+	if(cubeidx != -1 && cubeIsGreen(cubeidx) == 1) { //push green cube (not red!)
+		if(mKeyboard->isKeyDown(OIS::KC_I)) { //we are pushing the box
+			forwardFlag = 0;
+			backFlag = 0;
+			strafeFlag = 0;
+			pushFlag = 1; //pushing the box
+			char nodeName[80];
+			//strafeFlag = 1;
+			sprintf(nodeName, "Cube_%d_Node",  cubeidx);
+			mSceneMgr->getSceneNode(nodeName)->translate(transVector * evt.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
+		}
+		else { //just running into the box
+			//cannot move in any direction except jumping
+			transVector.y = 0.0;
+			mSceneMgr->getSceneNode("NinjaNode")->translate(-transVector * evt.timeSinceLastFrame, Ogre::Node::TS_LOCAL);
+			mCamera->move(-transVector * evt.timeSinceLastFrame);
+		}
+	}
+	else if (cubeidx != -1) {
+		//cube is red. Do something else
+		//deathFlag = 1; //(?)
+	}
+	//strafeFlag = 1;
 
 	return true;
 }
@@ -251,6 +279,16 @@ bool FinalApplication::frameRenderingQueued(const Ogre::FrameEvent& evt)
 			mAnimationState->setTimePosition(0);
 		}
 		mAnimationState = mEntity->getAnimationState("Stealth");
+        mAnimationState->setLoop(true);
+        mAnimationState->setEnabled(true);
+	}
+	else if(pushFlag == 1){
+		pushFlag = 0;
+		if(newAnimationFlag != 4){
+			newAnimationFlag = 4;
+			mAnimationState->setTimePosition(0);
+		}
+		mAnimationState = mEntity->getAnimationState("Crouch");
         mAnimationState->setLoop(true);
         mAnimationState->setEnabled(true);
 	}
