@@ -46,9 +46,11 @@ void FinalApplication::createCube(Ogre::Vector3 position, Ogre::Vector3 scale, i
 	newEntity = mSceneMgr->createEntity(entityName,  "cube.mesh");
 	if(color > 0) {
 		newEntity->setMaterialName("FINAL/Green");
+		pushable.push_back(true);
 	}
 	else {
 		newEntity->setMaterialName("FINAL/Red");
+		pushable.push_back(false);
 	}
 	Ogre::SceneNode *newNode;  
 	char nodeName[80];
@@ -59,6 +61,10 @@ void FinalApplication::createCube(Ogre::Vector3 position, Ogre::Vector3 scale, i
 	newNode->scale( scale ); 
 	_cubeEntities.push_back(newEntity);
 	_cubeNodes.push_back(newNode);
+}
+
+bool FinalApplication::cubeIsGreen(int index) {
+	return pushable[index];
 }
 
 int FinalApplication::collideCube() {
