@@ -1,7 +1,6 @@
 #pragma once
 
 #include "BaseApplication.h"
-#include "Cube.h"
 #include <deque>
 #include <vector>
 #include <string>
